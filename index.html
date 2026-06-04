@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0d1b2a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="আর্থিক ট্র্যাকার">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>আর্থিক ট্র্যাকার</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    body{font-family:system-ui,sans-serif;background:#0d1b2a;color:#e2e8f0;min-height:100vh;}
+    input,button,select,textarea{font-family:system-ui,sans-serif;}
+    input::placeholder,textarea::placeholder{color:#475569;}
+    :root{
+      --gold:#c9a84c;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+      --purple:#818cf8;--card:#1e3a5f;--dark:#0f2240;--border:#2a4a6f;
+    }
+    .header{background:linear-gradient(135deg,#0f2240,#1a3a5c);padding:env(safe-area-inset-top,14px) 14px 0;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+    .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-top:6px;}
+    .app-title{font-size:18px;font-weight:800;background:linear-gradient(90deg,#c9a84c,#f0d080);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .app-owner{font-size:11px;color:#8aab8a;margin-top:1px;}
+    .net-badge{background:#c9a84c22;border:1px solid #c9a84c55;border-radius:10px;padding:6px 11px;text-align:right;}
+    .net-label{font-size:9px;color:#94a3b8;}
+    .net-val{font-size:13px;font-weight:800;color:var(--gold);}
+    .sync-indicator{font-size:9px;margin-top:1px;}
+    .sync-ok{color:#22c55e;}
+    .sync-pending{color:#f59e0b;}
+    .sync-err{color:#ef4444;}
+    .tabs{display:flex;overflow-x:auto;scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab-btn{flex-shrink:0;padding:9px 9px;background:none;border:none;cursor:pointer;border-bottom:3px solid transparent;color:#64748b;font-size:10px;font-weight:500;white-space:nowrap;transition:all 0.2s;}
+    .tab-btn.active{border-bottom-color:var(--gold);color:var(--gold);font-weight:700;}
+    .tab-icon{font-size:14px;display:block;margin-bottom:2px;}
+    .content{max-width:480px;margin:0 auto;padding:13px 11px 80px;}
+    .section{display:none;}
+    .section.active{display:block;}
+    .card{background:var(--card);border-radius:13px;padding:14px;border:1px solid var(--border);margin-bottom:10px;}
+    .card-gold{background:linear-gradient(135deg,#0f2240,#1a3a5c);border-radius:15px;padding:15px;border:1px solid #c9a84c44;margin-bottom:11px;}
+    .section-title{color:var(--gold);font-size:11px;font-weight:700;margin-bottom:10px;}
+    .inp{background:#1e3a5f;border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:#f1f5f9;font-size:13px;width:100%;outline:none;}
+    .inp:focus{border-color:var(--gold);}
+    select.inp option{background:#0f2240;}
+    .btn{border:none;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer;font-size:12px;}
+    .btn-gold{background:var(--gold);color:#0d1b2a;}
+    .btn-green{background:var(--green);color:#fff;}
+    .btn-red{background:var(--red);color:#fff;}
+    .btn-blue{background:var(--blue);color:#fff;}
+    .btn-sm{background:#1e3a5f;border:1px solid var(--border);border-radius:7px;padding:5px 9px;color:#94a3b8;font-size:11px;cursor:pointer;}
+    .del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;padding:2px 5px;}
+    .row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+    .row:last-child{border-bottom:none;}
+    .row-name{color:#e2e8f0;font-size:13px;}
+    .row-sub{color:#475569;font-size:10px;margin-top:1px;}
+    .row-actions{display:flex;gap:5px;align-items:center;}
+    .hist-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+    .hist-row:last-child{border-bottom:none;}
+    .ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px;}
+    .ov-card{background:var(--dark);border-radius:11px;padding:12px;border:1px solid var(--border);}
+    .ov-label{color:#64748b;font-size:10px;margin-bottom:3px;}
+    .ov-val{font-size:16px;font-weight:800;}
+    .shop-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border);}
+    .shop-item:last-child{border-bottom:none;}
+    .shop-check{width:22px;height:22px;border-radius:50%;background:transparent;border:2px solid #475569;color:#475569;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+    .shop-check.done{background:var(--green);border-color:var(--green);color:#fff;}
+    .person-card{background:var(--dark);border-radius:12px;padding:14px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;transition:all 0.15s;}
+    .person-card:active{opacity:0.8;}
+    .person-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;overflow:hidden;}
+    .person-avatar img{width:100%;height:100%;object-fit:cover;}
+    .balance-pill{border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700;}
+    .tx-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+    .tx-row:last-child{border-bottom:none;}
+    .tx-type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    .back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:#94a3b8;cursor:pointer;font-size:13px;margin-bottom:12px;padding:0;}
+    .invest-card{background:var(--dark);border-radius:12px;padding:14px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;}
+    .modal{position:fixed;inset:0;background:#000b;z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+    .modal.hidden{display:none;}
+    .modal-box{background:#0f2240;border-radius:18px 18px 0 0;padding:20px;width:100%;max-width:480px;border:1px solid var(--border);max-height:88vh;overflow-y:auto;}
+    .modal-title{color:var(--gold);font-weight:700;font-size:14px;margin-bottom:13px;}
+    .bar-bg{background:#1e3a5f;border-radius:99px;height:6px;overflow:hidden;}
+    .bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),#f0d080);transition:width 0.4s;}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:10px 20px;border-radius:10px;font-weight:600;font-size:12px;z-index:999;display:none;white-space:nowrap;}
+    .empty{text-align:center;color:#475569;padding:28px;}
+    .flex-row{display:flex;gap:7px;}
+    .mb6{margin-bottom:6px;}
+    .mb8{margin-bottom:8px;}
+    .mb10{margin-bottom:10px;}
+    .mb11{margin-bottom:11px;}
+    .mb12{margin-bottom:12px;}
+    .badge{border-radius:5px;padding:2px 8px;font-size:10px;font-weight:600;}
+    /* Loading overlay */
+    #loadingOverlay{position:fixed;inset:0;background:#0d1b2a;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+    .spinner{width:36px;height:36px;border:3px solid #1e3a5f;border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div style="color:var(--gold);font-size:13px;font-weight:600;">ডেটা লোড হচ্ছে...</div>
+  <div style="color:#475569;font-size:11px;" id="loadingMsg">Supabase থেকে sync হচ্ছে</div>
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="app-title">আর্থিক ট্র্যাকার</div>
+      <div class="app-owner">আবুল কালাম নেছারী</div>
+    </div>
+    <div class="net-badge">
+      <div class="net-label">নিট অবস্থান</div>
+      <div class="net-val" id="netPosition">...</div>
+      <div class="sync-indicator" id="syncStatus">⏳ sync হচ্ছে</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('overview')"><span class="tab-icon">📊</span>সারসংক্ষেপ</button>
+    <button class="tab-btn" onclick="switchTab('liquid')"><span class="tab-icon">💵</span>লিকুইড</button>
+    <button class="tab-btn" onclick="switchTab('income')"><span class="tab-icon">💰</span>আয়/ব্যয়</button>
+    <button class="tab-btn" onclick="switchTab('shopping')"><span class="tab-icon">🛒</span>কেনাকাটা</button>
+    <button class="tab-btn" onclick="switchTab('ledger')"><span class="tab-icon">🤝</span>লেনদেন</button>
+    <button class="tab-btn" onclick="switchTab('invest')"><span class="tab-icon">📈</span>বিনিয়োগ</button>
+    <button class="tab-btn" onclick="switchTab('sadaqa')"><span class="tab-icon">💚</span>সদকা</button>
+    <button class="tab-btn" onclick="switchTab('report')"><span class="tab-icon">📋</span>রিপোর্ট</button>
+    <button class="tab-btn" onclick="switchTab('backup')"><span class="tab-icon">💾</span>Backup</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- OVERVIEW -->
+  <div id="section-overview" class="section active">
+    <div style="color:#8aab8a;font-size:11px;text-align:center;margin-bottom:10px;">আবুল কালাম নেছারী — আর্থিক সারসংক্ষেপ</div>
+    <div class="ov-grid" id="ovGrid"></div>
+    <div class="card-gold"><div class="section-title">💵 লিকুইড</div><div id="ovLiquid"></div></div>
+    <div class="card-gold"><div class="section-title">📈 বিনিয়োগ</div><div id="ovInvest"></div></div>
+    <div class="card"><div class="section-title">🤝 পাওনা</div><div id="ovPawna"></div></div>
+    <div class="card"><div class="section-title">🤝 দেনা</div><div id="ovDena"></div></div>
+  </div>
+
+  <!-- LIQUID -->
+  <div id="section-liquid" class="section">
+    <div class="card-gold mb12">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="color:#94a3b8;font-size:11px;">মোট লিকুইড</div>
+          <div id="liquidTotal" style="font-size:22px;font-weight:800;color:var(--gold);">০</div>
+        </div>
+        <button class="btn btn-gold" onclick="openModal('addLiquid')">+ ওয়ালেট</button>
+      </div>
+    </div>
+    <div class="card mb10"><div class="section-title">💵 ওয়ালেট ব্যালেন্স</div><div id="liquidList"></div></div>
+    <div class="card"><div class="section-title">🔄 সাম্প্রতিক লেনদেন</div><div id="liquidHistory"></div></div>
+  </div>
+
+  <!-- INCOME/EXPENSE -->
+  <div id="section-income" class="section">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:11px;" id="incomeStats"></div>
+    <div class="card-gold mb11">
+      <div class="section-title">➕ নতুন এন্ট্রি</div>
+      <div class="flex-row mb8">
+        <button id="typeInc" class="btn btn-green" style="flex:1;" onclick="setIEType('income')">💰 আয়</button>
+        <button id="typeExp" class="btn btn-sm" style="flex:1;" onclick="setIEType('expense')">💸 ব্যয়</button>
+      </div>
+      <input class="inp mb8" id="ie_amount" type="number" placeholder="পরিমাণ (৳)">
+      <select class="inp mb8" id="ie_cat"></select>
+      <select class="inp mb8" id="ie_wallet"><option value="">ওয়ালেট (ঐচ্ছিক)</option></select>
+      <input class="inp mb10" id="ie_note" placeholder="বিবরণ (ঐচ্ছিক)...">
+      <button class="btn btn-gold" style="width:100%;" onclick="addIE()">এন্ট্রি যোগ করুন</button>
+    </div>
+    <div class="card"><div class="section-title">📋 ইতিহাস</div><div id="ieHistory"></div></div>
+  </div>
+
+  <!-- SHOPPING -->
+  <div id="section-shopping" class="section">
+    <div class="card-gold mb11">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;">
+        <div><div style="color:#94a3b8;font-size:10px;">মোট আইটেম</div><div id="shopTotal" style="font-size:18px;font-weight:800;color:var(--gold);">০</div></div>
+        <div style="text-align:center;"><div style="color:#94a3b8;font-size:10px;">কেনা হয়েছে</div><div id="shopDoneCount" style="font-size:18px;font-weight:800;color:var(--green);">০</div></div>
+        <div style="text-align:right;"><div style="color:#94a3b8;font-size:10px;">মোট খরচ</div><div id="shopSpent" style="font-size:18px;font-weight:800;color:var(--gold);">৳০</div></div>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="shopBar" style="width:0%"></div></div>
+    </div>
+    <div class="card mb11">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+        <button class="btn-sm" id="fAll" onclick="setShopFilter('all')" style="background:var(--gold);color:#0d1b2a;">সব</button>
+        <button class="btn-sm" id="fPending" onclick="setShopFilter('pending')">বাকি</button>
+        <button class="btn-sm" id="fDone" onclick="setShopFilter('done')">কেনা হয়েছে</button>
+        <button class="btn btn-green" style="padding:5px 11px;font-size:11px;margin-left:auto;" onclick="openGroupPay()">🏪 দোকান পে</button>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <select class="inp" id="fPerson" onchange="renderShopping()" style="flex:1;font-size:11px;">
+          <option value="">সব ব্যক্তি</option>
+          <option>নাফিয়া</option><option>নুসাইবা</option><option>তাফরিহা</option>
+          <option>নেছারী</option><option>মা</option><option>বাবা</option><option>ঘর</option><option>অন্যান্য</option>
+        </select>
+        <select class="inp" id="fCat" onchange="renderShopping()" style="flex:1;font-size:11px;">
+          <option value="">সব ক্যাটাগরি</option>
+          <option>শিশু সামগ্রী</option><option>মুদি/বাজার</option><option>কাঁচাবাজার</option>
+          <option>ইলেকট্রনিক্স</option><option>কাপড়</option><option>জুতা</option>
+          <option>ফার্নিচার</option><option>ওষুধ</option><option>বই/স্টেশনারি</option>
+          <option>গৃহস্থালি</option><option>ব্যক্তিগত যত্ন</option><option>অনলাইন</option><option>অন্যান্য</option>
+        </select>
+      </div>
+    </div>
+    <div class="card-gold mb11">
+      <div class="section-title">➕ আইটেম যোগ করুন</div>
+      <div class="flex-row mb8">
+        <select class="inp" id="shop_person" style="flex:1;font-size:12px;">
+          <option value="">কার জন্য?</option>
+          <option>নাফিয়া</option><option>নুসাইবা</option><option>তাফরিহা</option>
+          <option>নেছারী</option><option>মা</option><option>বাবা</option><option>ঘর</option><option>অন্যান্য</option>
+        </select>
+        <select class="inp" id="shop_cat" style="flex:1;font-size:12px;">
+          <option value="">ক্যাটাগরি</option>
+          <option>শিশু সামগ্রী</option><option>মুদি/বাজার</option><option>কাঁচাবাজার</option>
+          <option>ইলেকট্রনিক্স</option><option>কাপড়</option><option>জুতা</option>
+          <option>ফার্নিচার</option><option>ওষুধ</option><option>বই/স্টেশনারি</option>
+          <option>গৃহস্থালি</option><option>ব্যক্তিগত যত্ন</option><option>অনলাইন</option><option>অন্যান্য</option>
+        </select>
+      </div>
+      <div id="shopInputList"></div>
+      <button class="btn btn-sm" onclick="addShopRow()" style="width:100%;margin-bottom:8px;padding:10px;font-size:13px;">+ আরো আইটেম</button>
+      <input class="inp mb10" id="shop_note" placeholder="নোট / দোকান (ঐচ্ছিক)...">
+      <button class="btn btn-gold" style="width:100%;" onclick="addShopItems()">সব যোগ করুন</button>
+    </div>
+    <div class="card mb11" id="groupPayCard" style="display:none;">
+      <div class="section-title">🏪 দোকান পে — একসাথে পরিশোধ</div>
+      <div id="groupPayList"></div>
+      <div class="flex-row" style="margin-top:10px;">
+        <input class="inp" id="gp_total" type="number" placeholder="মোট খরচ (৳)" style="flex:1;">
+        <select class="inp" id="gp_wallet" style="flex:1;font-size:12px;"></select>
+      </div>
+      <button class="btn btn-green" style="width:100%;margin-top:8px;" onclick="confirmGroupPay()">✓ পরিশোধ করুন</button>
+    </div>
+    <div class="card"><div class="section-title">📋 কেনার তালিকা</div><div id="shopList"></div></div>
+  </div>
+
+  <!-- LEDGER -->
+  <div id="section-ledger" class="section">
+    <div id="ledgerListView">
+      <div class="card-gold mb12">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="color:#94a3b8;font-size:11px;">নিট পাওনা</div>
+            <div id="ledgerPawna" style="font-size:20px;font-weight:800;color:var(--green);">০</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:#94a3b8;font-size:11px;">নিট দেনা</div>
+            <div id="ledgerDena" style="font-size:20px;font-weight:800;color:var(--red);">০</div>
+          </div>
+          <button class="btn btn-gold" onclick="openModal('addPerson')">+ ব্যক্তি</button>
+        </div>
+      </div>
+      <div id="ledgerPersonList"></div>
+    </div>
+    <div id="ledgerDetailView" style="display:none;">
+      <button class="back-btn" onclick="closeLedgerDetail()">← ফিরে যান</button>
+      <div id="ledgerDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- INVEST -->
+  <div id="section-invest" class="section">
+    <div id="investListView">
+      <div class="card-gold mb12">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="color:#94a3b8;font-size:11px;">মোট বিনিয়োগ</div>
+            <div id="investTotal" style="font-size:20px;font-weight:800;color:var(--gold);">০</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="color:#94a3b8;font-size:11px;">মোট রিটার্ন</div>
+            <div id="investTotalReturn" style="font-size:20px;font-weight:800;color:var(--green);">০</div>
+          </div>
+          <button class="btn btn-gold" onclick="openModal('addInvestOrg')">+ যোগ করুন</button>
+        </div>
+      </div>
+      <div id="investOrgList"></div>
+    </div>
+    <div id="investDetailView" style="display:none;">
+      <button class="back-btn" onclick="closeInvestDetail()">← ফিরে যান</button>
+      <div id="investDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- SADAQA -->
+  <div id="section-sadaqa" class="section">
+    <div class="card-gold mb11" style="text-align:center;">
+      <div style="color:#94a3b8;font-size:11px;">মোট সদকা</div>
+      <div id="sadaqaTotal" style="font-size:26px;font-weight:800;color:var(--green);">৳০</div>
+      <div style="color:#64748b;font-size:11px;margin-top:3px;">এই মাস: <span id="sadaqaMonth" style="color:var(--gold);">৳০</span></div>
+    </div>
+    <div class="card-gold mb11">
+      <div class="section-title">💚 নতুন সদকা</div>
+      <input class="inp mb8" id="sadaqa_amt" type="number" placeholder="পরিমাণ (৳)">
+      <select class="inp mb8" id="sadaqa_wallet"><option value="">কোন ওয়ালেট থেকে? (ঐচ্ছিক)</option></select>
+      <input class="inp mb8" id="sadaqa_note" placeholder="কাকে / কোথায়...">
+      <select class="inp mb10" id="sadaqa_type">
+        <option>নগদ</option><option>বিকাশ</option><option>খাদ্য</option><option>বস্ত্র</option><option>অন্যান্য</option>
+      </select>
+      <button class="btn btn-green" style="width:100%;" onclick="addSadaqa()">যোগ করুন</button>
+    </div>
+    <div class="card"><div class="section-title">📋 ইতিহাস</div><div id="sadaqaList"></div></div>
+  </div>
+
+  <!-- REPORT -->
+  <div id="section-report" class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <button class="btn-sm" onclick="changeRepMonth(-1)">‹ আগের মাস</button>
+      <span id="reportTitle" style="color:var(--gold);font-weight:700;font-size:14px;"></span>
+      <button class="btn-sm" onclick="changeRepMonth(1)">পরের মাস ›</button>
+    </div>
+    <div id="reportContent"></div>
+  </div>
+
+  <!-- BACKUP -->
+  <div id="section-backup" class="section">
+    <div class="card-gold mb12" style="text-align:center;">
+      <div style="font-size:32px;margin-bottom:8px;">☁️</div>
+      <div style="color:var(--gold);font-weight:700;font-size:15px;margin-bottom:4px;">Cloud Backup (Supabase)</div>
+      <div style="color:#64748b;font-size:11px;">ডেটা Supabase cloud-এ সুরক্ষিত। Chrome clear করলেও থাকবে।</div>
+    </div>
+    <div class="card mb10">
+      <div class="section-title">☁️ Cloud Sync</div>
+      <div style="color:#94a3b8;font-size:12px;margin-bottom:12px;">Supabase-এ এখনই সব ডেটা save করুন।</div>
+      <button class="btn btn-gold" style="width:100%;margin-bottom:8px;" onclick="manualSync()">🔄 এখনই Sync করুন</button>
+      <div id="lastSyncTime" style="color:#475569;font-size:11px;text-align:center;"></div>
+    </div>
+    <div class="card mb10">
+      <div class="section-title">📤 Local Export (JSON)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-bottom:12px;">Extra সতর্কতার জন্য local backup নিন।</div>
+      <button class="btn btn-blue" style="width:100%;margin-bottom:8px;" onclick="exportData()">📥 JSON Download করুন</button>
+      <div style="color:#64748b;font-size:11px;margin-bottom:8px;">অথবা email করুন:</div>
+      <div class="flex-row">
+        <input class="inp" id="backupEmail" placeholder="আপনার Gmail..." style="flex:1;">
+        <button class="btn btn-blue" onclick="emailBackup()" style="white-space:nowrap;">✉️ Email</button>
+      </div>
+    </div>
+    <div class="card mb10">
+      <div class="section-title">📥 Import (Restore)</div>
+      <div style="color:#94a3b8;font-size:12px;margin-bottom:12px;">⚠️ Import করলে বর্তমান সব data মুছে যাবে।</div>
+      <input type="file" id="importFile" accept=".json" onchange="importData(this)" style="display:none;">
+      <button class="btn btn-red" style="width:100%;" onclick="document.getElementById('importFile').click()">📂 JSON থেকে Restore</button>
+    </div>
+    <div class="card"><div class="section-title">ℹ️ সংরক্ষিত Data</div><div id="backupStats"></div></div>
+  </div>
+
+</div>
+
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modalBox"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════
+const SUPA_URL = 'https://sprcckidujdtqojfjsvv.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwcmNja2lkdWpkdHFvamZqc3Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1Mjg5OTYsImV4cCI6MjA5NjEwNDk5Nn0.j14OuHF3vEELwGKL5Hilelc10uSod0VcM90M9olMS-w';
+const SUPA_HEADERS = {
+  'Content-Type': 'application/json',
+  'apikey': SUPA_KEY,
+  'Authorization': 'Bearer ' + SUPA_KEY,
+  'Prefer': 'return=minimal'
+};
+
+async function supaLoad() {
+  const res = await fetch(`${SUPA_URL}/rest/v1/arthik_data?id=eq.main&select=*`, {
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+  });
+  if (!res.ok) throw new Error('Load failed: ' + res.status);
+  const rows = await res.json();
+  return rows[0] || null;
+}
+
+async function supaSave(data) {
+  const payload = {
+    id: 'main',
+    liquid: data.liquid,
+    liquid_tx: data.liquidTx,
+    ledger: data.ledger,
+    invest: data.invest,
+    ie: data.ie,
+    shopping: data.shopping,
+    sadaqa: data.sadaqa,
+    updated_at: new Date().toISOString()
+  };
+  const res = await fetch(`${SUPA_URL}/rest/v1/arthik_data`, {
+    method: 'POST',
+    headers: { ...SUPA_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('Save failed: ' + err);
+  }
+}
+
+// ══════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════
+const INC_CATS=['মাদ্রাসা বেতন','মাদ্রাসা বোনাস','মসজিদ বেতন','মসজিদ বোনাস','হাদিয়া','কোর্স ফি','মাহফিল','ইউটিউব','ফেসবুক','তারবিয়াতুল উম্মাহ','SLA','অন্যান্য'];
+const EXP_CATS=['খাবার','যাতায়াত','ঘর ভাড়া','শিক্ষা','স্বাস্থ্য','কেনাকাটা','বিল/ইউটিলিটি','পোশাক','মেহমানদারি','গিফট/উপহার','অন্যান্য'];
+const BN_MONTHS=['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+const TX_TYPES={
+  lent:    {label:'ধার দিলাম',   color:'#f59e0b', sign:+1},
+  borrowed:{label:'ধার নিলাম',   color:'#ef4444', sign:-1},
+  received:{label:'পেলাম',        color:'#22c55e', sign:-1},
+  repaid:  {label:'দিয়ে দিলাম', color:'#22c55e', sign:+1},
+};
+const INV_TYPES={
+  invested:{label:'বিনিয়োগ করলাম', color:'#f59e0b'},
+  returned:{label:'ফেরত পেলাম',    color:'#22c55e'},
+  profit:  {label:'মুনাফা পেলাম',  color:'#818cf8'},
+};
+const PERSON_COLORS=['#f59e0b','#3b82f6','#22c55e','#ec4899','#818cf8','#ef4444','#14b8a6','#f97316'];
+
+const INIT_LIQUID=[
+  {id:1,name:'অগ্রণী ব্যাংক',amount:196200},
+  {id:2,name:'নগদ',amount:29000},
+  {id:3,name:'বিকাশ',amount:28000},
+  {id:4,name:'DBBL',amount:21800},
+  {id:5,name:'হাতে নগদ',amount:11700},
+  {id:6,name:'রকেট',amount:9000},
+  {id:7,name:'IBBL',amount:2400},
+];
+const INIT_LEDGER=[
+  {id:1,name:'আম্মি',photo:'',color:'#f59e0b',transactions:[{id:1,type:'lent',amount:50000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:2,name:'ছোটো আপু',photo:'',color:'#ec4899',transactions:[{id:2,type:'lent',amount:30000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:3,name:'মোকাররম মামা',photo:'',color:'#3b82f6',transactions:[{id:3,type:'lent',amount:5000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:4,name:'শহিদ',photo:'',color:'#22c55e',transactions:[{id:4,type:'lent',amount:5000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:5,name:'নুরুল হুদা',photo:'',color:'#818cf8',transactions:[{id:5,type:'lent',amount:5000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:6,name:'ইব্রাহিম',photo:'',color:'#14b8a6',transactions:[{id:6,type:'lent',amount:4500,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:7,name:'আবু তৈয়ব',photo:'',color:'#f97316',transactions:[{id:7,type:'lent',amount:1000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:8,name:'সালাউদ্দিন আইউবি',photo:'',color:'#ef4444',transactions:[{id:8,type:'borrowed',amount:80000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:9,name:'আব্বা',photo:'',color:'#f59e0b',transactions:[{id:9,type:'borrowed',amount:70000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+  {id:10,name:'বড়ো আপু',photo:'',color:'#ec4899',transactions:[{id:10,type:'borrowed',amount:45000,note:'',date:'2025-01-01',walletId:null,receipt:''}]},
+];
+const INIT_INVEST=[
+  {id:1,name:'তারবিয়াতুল উম্মাহ',note:'',transactions:[{id:1,type:'invested',amount:363000,note:'প্রারম্ভিক',date:'2025-01-01',walletId:null}]},
+  {id:2,name:'আঁটি মডেল টাউন',note:'',transactions:[{id:2,type:'invested',amount:309000,note:'প্রারম্ভিক',date:'2025-01-01',walletId:null}]},
+  {id:3,name:'SLA Foundation',note:'',transactions:[{id:3,type:'invested',amount:276000,note:'প্রারম্ভিক',date:'2025-01-01',walletId:null}]},
+  {id:4,name:'গোল্ড',note:'',transactions:[{id:4,type:'invested',amount:4000,note:'প্রারম্ভিক',date:'2025-01-01',walletId:null}]},
+];
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+function lsLoad(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}}
+function lsSave(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.warn('localStorage failed',e);}}
+
+let S = {
+  liquid:   INIT_LIQUID,
+  liquidTx: [],
+  ledger:   INIT_LEDGER,
+  invest:   INIT_INVEST,
+  ie:       [],
+  shopping: [],
+  sadaqa:   [],
+};
+
+let syncPending = false;
+let syncTimer = null;
+let lastSyncAt = null;
+
+// ══════════════════════════════════════
+// SYNC ENGINE
+// ══════════════════════════════════════
+function setSyncStatus(state, msg) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  el.className = 'sync-indicator sync-' + state;
+  el.textContent = msg;
+}
+
+function lsCacheAll() {
+  lsSave('f3_liquid',   S.liquid);
+  lsSave('f3_liquidTx', S.liquidTx);
+  lsSave('f3_ledger',   S.ledger);
+  lsSave('f3_invest',   S.invest);
+  lsSave('f3_ie',       S.ie);
+  lsSave('f3_shopping', S.shopping);
+  lsSave('f3_sadaqa',   S.sadaqa);
+}
+
+function scheduleSave() {
+  syncPending = true;
+  setSyncStatus('pending', '⏳ saving...');
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(doCloudSave, 1500);
+}
+
+async function doCloudSave() {
+  try {
+    await supaSave(S);
+    lsCacheAll();
+    syncPending = false;
+    lastSyncAt = new Date();
+    setSyncStatus('ok', '✅ synced');
+    updateLastSyncUI();
+  } catch(e) {
+    console.error('Sync error:', e);
+    setSyncStatus('err', '❌ sync error');
+    lsCacheAll(); // at least save locally
+  }
+}
+
+function saveAll() {
+  lsCacheAll();
+  scheduleSave();
+}
+
+async function manualSync() {
+  setSyncStatus('pending', '⏳ syncing...');
+  toast('☁️ Sync হচ্ছে...');
+  try {
+    await supaSave(S);
+    lsCacheAll();
+    lastSyncAt = new Date();
+    setSyncStatus('ok', '✅ synced');
+    updateLastSyncUI();
+    toast('✅ Sync সম্পন্ন!');
+  } catch(e) {
+    setSyncStatus('err', '❌ failed');
+    toast('⚠️ Sync ব্যর্থ! Local-এ save হয়েছে।');
+  }
+}
+
+function updateLastSyncUI() {
+  const el = document.getElementById('lastSyncTime');
+  if (el && lastSyncAt) {
+    el.textContent = 'সর্বশেষ sync: ' + lastSyncAt.toLocaleTimeString('bn-BD');
+  }
+}
+
+// ══════════════════════════════════════
+// INIT — load from Supabase
+// ══════════════════════════════════════
+async function initApp() {
+  const overlay = document.getElementById('loadingOverlay');
+  const msg = document.getElementById('loadingMsg');
+
+  // Try Supabase first
+  try {
+    msg.textContent = 'Supabase থেকে ডেটা আনা হচ্ছে...';
+    const row = await supaLoad();
+    if (row && row.liquid) {
+      S.liquid   = row.liquid   || INIT_LIQUID;
+      S.liquidTx = row.liquid_tx || [];
+      S.ledger   = row.ledger   || INIT_LEDGER;
+      S.invest   = row.invest   || INIT_INVEST;
+      S.ie       = row.ie       || [];
+      S.shopping = row.shopping || [];
+      S.sadaqa   = row.sadaqa   || [];
+      lsCacheAll();
+      setSyncStatus('ok', '✅ synced');
+      lastSyncAt = new Date();
+    } else {
+      // First time — no cloud data, check localStorage
+      msg.textContent = 'প্রথমবার — local cache চেক হচ্ছে...';
+      loadFromLS();
+      // Push initial data to cloud
+      await supaSave(S);
+      setSyncStatus('ok', '✅ synced');
+      lastSyncAt = new Date();
+    }
+  } catch(e) {
+    // Supabase failed — fallback to localStorage
+    console.warn('Supabase load failed, using localStorage:', e);
+    msg.textContent = 'Offline — local cache থেকে লোড হচ্ছে...';
+    loadFromLS();
+    setSyncStatus('err', '⚠️ offline');
+  }
+
+  overlay.style.display = 'none';
+  updateNet();
+  renderOverview();
+  resetShopForm();
+  updateLastSyncUI();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+}
+
+function loadFromLS() {
+  S.liquid   = lsLoad('f3_liquid',   INIT_LIQUID);
+  S.liquidTx = lsLoad('f3_liquidTx', []);
+  S.ledger   = lsLoad('f3_ledger',   INIT_LEDGER);
+  S.invest   = lsLoad('f3_invest',   INIT_INVEST);
+  S.ie       = lsLoad('f3_ie',       []);
+  S.shopping = lsLoad('f3_shopping', []);
+  S.sadaqa   = lsLoad('f3_sadaqa',   []);
+}
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+const fmt=n=>'৳'+Math.abs(n).toLocaleString();
+const fmtS=n=>(n>=0?'+':'-')+'৳'+Math.abs(n).toLocaleString();
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function nextId(a){return a.length?Math.max(...a.map(x=>x.id||0))+1:1;}
+function toast(m,col){const t=document.getElementById('toast');t.textContent=m;t.style.background=col||'var(--green)';t.style.display='block';setTimeout(()=>t.style.display='none',2400);}
+
+function personBal(p){
+  return p.transactions.reduce((a,tx)=>{
+    if(tx.type==='lent')     return a+tx.amount;
+    if(tx.type==='borrowed') return a-tx.amount;
+    if(tx.type==='received') return a-tx.amount;
+    if(tx.type==='repaid')   return a+tx.amount;
+    return a;
+  },0);
+}
+function investIn(inv){return inv.transactions.filter(t=>t.type==='invested').reduce((a,t)=>a+t.amount,0);}
+function investOut(inv){return inv.transactions.filter(t=>t.type==='returned'||t.type==='profit').reduce((a,t)=>a+t.amount,0);}
+function investNet(inv){return investIn(inv)-investOut(inv);}
+function totalLiquid(){return S.liquid.reduce((a,x)=>a+x.amount,0);}
+function totalPawna(){return S.ledger.filter(p=>personBal(p)>0).reduce((a,p)=>a+personBal(p),0);}
+function totalDena(){return S.ledger.filter(p=>personBal(p)<0).reduce((a,p)=>a+Math.abs(personBal(p)),0);}
+function totalInvest(){return S.invest.reduce((a,x)=>a+investNet(x),0);}
+function totalInvestReturn(){return S.invest.reduce((a,x)=>a+investOut(x),0);}
+function netPos(){return totalLiquid()+totalPawna()+totalInvest()-totalDena();}
+function updateNet(){document.getElementById('netPosition').textContent=fmt(netPos());}
+
+function liquidTx(walletId,amount,note){
+  const w=S.liquid.find(x=>x.id==walletId);
+  if(!w)return;
+  w.amount+=amount;
+  S.liquidTx.push({id:nextId(S.liquidTx),account:w.name,amount,note,date:today()});
+}
+function walletOpts(sel=''){
+  return S.liquid.map(w=>`<option value="${w.id}"${w.id==sel?' selected':''}>${w.name} (${fmt(w.amount)})</option>`).join('');
+}
+
+// ══════════════════════════════════════
+// TAB
+// ══════════════════════════════════════
+const TABS=['overview','liquid','income','shopping','ledger','invest','sadaqa','report','backup'];
+function switchTab(tab){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('section-'+tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',TABS[i]===tab));
+  updateNet();
+  if(tab==='overview')  renderOverview();
+  else if(tab==='liquid')    renderLiquid();
+  else if(tab==='income')    renderIE();
+  else if(tab==='shopping')  renderShopping();
+  else if(tab==='ledger')    renderLedger();
+  else if(tab==='invest')    renderInvestList();
+  else if(tab==='sadaqa')    renderSadaqa();
+  else if(tab==='report')    renderReport();
+  else if(tab==='backup')    renderBackup();
+}
+
+// ══════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════
+function renderOverview(){
+  const tl=totalLiquid(),tp=totalPawna(),td=totalDena(),ti=totalInvest(),net=tl+tp+ti-td;
+  document.getElementById('ovGrid').innerHTML=`
+    <div class="ov-card"><div class="ov-label">লিকুইড সম্পদ</div><div class="ov-val" style="color:var(--gold)">${fmt(tl)}</div></div>
+    <div class="ov-card"><div class="ov-label">নিশ্চিত পাওনা</div><div class="ov-val" style="color:var(--green)">${fmt(tp)}</div></div>
+    <div class="ov-card"><div class="ov-label">বিনিয়োগ</div><div class="ov-val" style="color:var(--blue)">${fmt(ti)}</div></div>
+    <div class="ov-card"><div class="ov-label">মোট দেনা</div><div class="ov-val" style="color:var(--red)">${fmt(td)}</div></div>
+    <div class="ov-card" style="grid-column:1/-1;border-color:#c9a84c44;">
+      <div class="ov-label">নিট অবস্থান</div>
+      <div class="ov-val" style="color:var(--gold);font-size:20px;">${fmt(net)} ✅</div>
+    </div>`;
+  document.getElementById('ovLiquid').innerHTML=S.liquid.map(x=>`
+    <div class="row"><span class="row-name">${x.name}</span><span style="color:var(--gold);font-weight:700;">${fmt(x.amount)}</span></div>`).join('');
+  document.getElementById('ovInvest').innerHTML=S.invest.map(x=>`
+    <div class="row"><span class="row-name">${x.name}</span><span style="color:var(--blue);font-weight:700;">${fmt(investNet(x))}</span></div>`).join('');
+  const pawnaList=S.ledger.filter(p=>personBal(p)>0);
+  const denaList=S.ledger.filter(p=>personBal(p)<0);
+  document.getElementById('ovPawna').innerHTML=pawnaList.map(p=>`
+    <div class="row"><span class="row-name">${p.name}</span><span style="color:var(--green);font-weight:700;">${fmt(personBal(p))}</span></div>`).join('')||'<div class="empty">কোনো পাওনা নেই</div>';
+  document.getElementById('ovDena').innerHTML=denaList.map(p=>`
+    <div class="row"><span class="row-name">${p.name}</span><span style="color:var(--red);font-weight:700;">${fmt(Math.abs(personBal(p)))}</span></div>`).join('')||'<div class="empty">কোনো দেনা নেই</div>';
+}
+
+// ══════════════════════════════════════
+// LIQUID
+// ══════════════════════════════════════
+function renderLiquid(){
+  document.getElementById('liquidTotal').textContent=fmt(totalLiquid());
+  document.getElementById('liquidList').innerHTML=S.liquid.map(x=>`
+    <div class="row">
+      <div><div class="row-name">${x.name}</div></div>
+      <div class="row-actions">
+        <span style="color:var(--gold);font-weight:700;font-size:13px;">${fmt(x.amount)}</span>
+        <button class="btn-sm" onclick="openTransfer(${x.id})">⇄ ট্রান্সফার</button>
+        <button class="btn-sm" onclick="editBalance(${x.id})">✏ এডিট</button>
+        <button class="del-btn" onclick="delLiquid(${x.id})">×</button>
+      </div>
+    </div>`).join('');
+  const tx=[...S.liquidTx].reverse().slice(0,20);
+  document.getElementById('liquidHistory').innerHTML=tx.length?tx.map(t=>`
+    <div class="hist-row">
+      <div><div style="color:#e2e8f0;font-size:12px;">${t.note} <span style="color:#475569;font-size:10px;">(${t.account})</span></div>
+      <div style="color:#475569;font-size:10px;">${t.date}</div></div>
+      <span style="color:${t.amount>=0?'var(--green)':'var(--red)'};font-weight:700;font-size:12px;">${fmtS(t.amount)}</span>
+    </div>`).join(''):'<div class="empty">কোনো লেনদেন নেই</div>';
+}
+function openTransfer(fromId){
+  const from=S.liquid.find(x=>x.id===fromId);
+  const opts=S.liquid.filter(x=>x.id!==fromId).map(x=>`<option value="${x.id}">${x.name} (${fmt(x.amount)})</option>`).join('');
+  showModal(`
+    <div class="modal-title">🔄 ট্রান্সফার — ${from.name}</div>
+    <div style="color:#94a3b8;font-size:11px;margin-bottom:9px;">বর্তমান: ${fmt(from.amount)}</div>
+    <select class="inp mb8" id="m_to"><option value="">কোথায় পাঠাবেন?</option>${opts}</select>
+    <input class="inp mb8" id="m_amt" type="number" placeholder="পরিমাণ (৳)">
+    <input class="inp mb12" id="m_note" placeholder="নোট...">
+    <div class="flex-row">
+      <button class="btn btn-blue" style="flex:1;" onclick="doTransfer(${fromId})">ট্রান্সফার</button>
+      <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+    </div>`);
+}
+function doTransfer(fromId){
+  const toId=+document.getElementById('m_to').value;
+  const amt=+document.getElementById('m_amt').value;
+  const note=document.getElementById('m_note').value;
+  if(!toId||!amt)return;
+  const from=S.liquid.find(x=>x.id===fromId),to=S.liquid.find(x=>x.id===toId);
+  const n=note||`${from.name} → ${to.name}`;
+  liquidTx(fromId,-amt,n);liquidTx(toId,amt,n);
+  saveAll();closeModal();renderLiquid();updateNet();toast('✅ ট্রান্সফার হয়েছে');
+}
+function editBalance(id){
+  const w=S.liquid.find(x=>x.id===id);
+  showModal(`
+    <div class="modal-title">✏ ব্যালেন্স সম্পাদনা — ${w.name}</div>
+    <div style="color:#94a3b8;font-size:11px;margin-bottom:9px;">বর্তমান: ${fmt(w.amount)}</div>
+    <input class="inp mb8" id="m_amt" type="number" value="${w.amount}" placeholder="নতুন ব্যালেন্স (৳)">
+    <div style="color:#64748b;font-size:11px;margin-bottom:6px;">পার্থক্যটা কোন খাতে লগ করবেন?</div>
+    <select class="inp mb12" id="m_cat">
+      <option value="">খাত বাছাই করুন (ঐচ্ছিক)</option>
+      <optgroup label="আয়ের খাত">${INC_CATS.map(c=>`<option value="inc_${c}">${c}</option>`).join('')}</optgroup>
+      <optgroup label="ব্যয়ের খাত">${EXP_CATS.map(c=>`<option value="exp_${c}">${c}</option>`).join('')}</optgroup>
+    </select>
+    <div class="flex-row">
+      <button class="btn btn-gold" style="flex:1;" onclick="doEditBalance(${id})">আপডেট করুন</button>
+      <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+    </div>`);
+}
+function doEditBalance(id){
+  const amt=+document.getElementById('m_amt').value;
+  const catVal=document.getElementById('m_cat').value;
+  if(isNaN(amt))return;
+  const w=S.liquid.find(x=>x.id===id);
+  const diff=amt-w.amount;
+  w.amount=amt;
+  S.liquidTx.push({id:nextId(S.liquidTx),account:w.name,amount:diff,note:'ব্যালেন্স সংশোধন',date:today()});
+  if(catVal&&diff!==0){
+    const isInc=catVal.startsWith('inc_');
+    const cat=catVal.replace(/^(inc_|exp_)/,'');
+    S.ie.unshift({id:nextId(S.ie),type:isInc?'income':'expense',amount:Math.abs(diff),cat,note:`ব্যালেন্স সংশোধন — ${w.name}`,walletId:id,date:today()});
+  }
+  saveAll();closeModal();renderLiquid();updateNet();toast('✅ আপডেট হয়েছে');
+}
+function delLiquid(id){if(!confirm('ডিলিট করবেন?'))return;S.liquid=S.liquid.filter(x=>x.id!==id);saveAll();renderLiquid();updateNet();}
+
+// ══════════════════════════════════════
+// INCOME / EXPENSE
+// ══════════════════════════════════════
+let ieType='income';
+function setIEType(t){
+  ieType=t;
+  document.getElementById('typeInc').className='btn '+(t==='income'?'btn-green':'btn-sm');
+  document.getElementById('typeExp').className='btn '+(t==='expense'?'btn-red':'btn-sm');
+  const cats=t==='income'?INC_CATS:EXP_CATS;
+  document.getElementById('ie_cat').innerHTML=cats.map(c=>`<option>${c}</option>`).join('');
+}
+function populateIEWallets(){document.getElementById('ie_wallet').innerHTML='<option value="">ওয়ালেট (ঐচ্ছিক)</option>'+walletOpts();}
+function addIE(){
+  const amt=+document.getElementById('ie_amount').value;
+  const cat=document.getElementById('ie_cat').value;
+  const walletId=+document.getElementById('ie_wallet').value;
+  const note=document.getElementById('ie_note').value;
+  if(!amt)return;
+  if(walletId) liquidTx(walletId,ieType==='income'?amt:-amt,note||cat);
+  S.ie.unshift({id:nextId(S.ie),type:ieType,amount:amt,cat,note,walletId,date:today()});
+  document.getElementById('ie_amount').value='';
+  document.getElementById('ie_note').value='';
+  saveAll();renderIE();updateNet();toast('✅ এন্ট্রি যোগ হয়েছে');
+}
+function renderIE(){
+  setIEType(ieType);populateIEWallets();
+  const mth=today().slice(0,7);
+  const mInc=S.ie.filter(x=>x.type==='income'&&x.date.startsWith(mth)).reduce((a,x)=>a+x.amount,0);
+  const mExp=S.ie.filter(x=>x.type==='expense'&&x.date.startsWith(mth)).reduce((a,x)=>a+x.amount,0);
+  const mSadT=S.sadaqa.filter(x=>x.date.startsWith(mth)).reduce((a,x)=>a+x.amount,0);
+  const mShopT=S.shopping.filter(x=>x.done&&x.date.startsWith(mth)).reduce((a,x)=>a+x.spent,0);
+  const mTotal=mExp+mSadT+mShopT;
+  document.getElementById('incomeStats').innerHTML=`
+    <div class="ov-card"><div class="ov-label">এই মাস আয়</div><div class="ov-val" style="color:var(--green);font-size:13px;">${fmt(mInc)}</div></div>
+    <div class="ov-card"><div class="ov-label">এই মাস ব্যয়</div><div class="ov-val" style="color:var(--red);font-size:13px;">${fmt(mTotal)}</div></div>
+    <div class="ov-card"><div class="ov-label">নিট সাশ্রয়</div><div class="ov-val" style="color:${mInc-mTotal>=0?'var(--gold)':'var(--red)'};font-size:13px;">${fmt(mInc-mTotal)}</div></div>`;
+  const hist=document.getElementById('ieHistory');
+  if(!S.ie.length){hist.innerHTML='<div class="empty">কোনো এন্ট্রি নেই</div>';return;}
+  hist.innerHTML=S.ie.slice(0,40).map(x=>{
+    const w=S.liquid.find(l=>l.id===x.walletId);
+    return `<div class="hist-row">
+      <div>
+        <div style="color:#e2e8f0;font-size:12px;">${x.note||x.cat} <span class="badge" style="background:${x.type==='income'?'#22c55e22':'#ef444422'};color:${x.type==='income'?'var(--green)':'var(--red)'};">${x.cat}</span></div>
+        <div style="color:#475569;font-size:10px;">${x.date}${w?' · '+w.name:''}</div>
+      </div>
+      <div class="row-actions">
+        <span style="color:${x.type==='income'?'var(--green)':'var(--red)'};font-weight:700;font-size:12px;">${x.type==='income'?'+':'-'}${fmt(x.amount)}</span>
+        <button class="del-btn" onclick="delIE(${x.id})">×</button>
+      </div>
+    </div>`;}).join('');
+}
+function delIE(id){S.ie=S.ie.filter(x=>x.id!==id);saveAll();renderIE();updateNet();}
+
+// ══════════════════════════════════════
+// SHOPPING
+// ══════════════════════════════════════
+let shopFilter='all',shopRowCount=0,gpSelected=new Set();
+function setShopFilter(f){
+  shopFilter=f;
+  ['fAll','fPending','fDone'].forEach(id=>{
+    const b=document.getElementById(id);
+    const active=(id==='fAll'&&f==='all')||(id==='fPending'&&f==='pending')||(id==='fDone'&&f==='done');
+    b.style.background=active?'var(--gold)':'#1e3a5f';
+    b.style.color=active?'#0d1b2a':'#94a3b8';
+  });
+  renderShopping();
+}
+function addShopRow(){
+  const div=document.createElement('div');
+  div.className='flex-row mb6';div.id='shopRow_'+shopRowCount;
+  div.innerHTML=`<input class="inp" placeholder="আইটেমের নাম..." style="flex:1;" onkeydown="if(event.key==='Enter')addShopRow()">
+    <button class="btn-sm" onclick="removeShopRow('shopRow_${shopRowCount}')" style="padding:10px 12px;color:var(--red);">×</button>`;
+  document.getElementById('shopInputList').appendChild(div);
+  div.querySelector('input').focus();shopRowCount++;
+}
+function removeShopRow(id){const el=document.getElementById(id);if(el)el.remove();}
+function resetShopForm(){
+  document.getElementById('shopInputList').innerHTML='';shopRowCount=0;addShopRow();
+  document.getElementById('shop_person').value='';
+  document.getElementById('shop_cat').value='';
+  document.getElementById('shop_note').value='';
+}
+function addShopItems(){
+  const person=document.getElementById('shop_person').value;
+  const cat=document.getElementById('shop_cat').value;
+  const note=document.getElementById('shop_note').value.trim();
+  const names=[...document.querySelectorAll('#shopInputList input')].map(i=>i.value.trim()).filter(v=>v);
+  if(!names.length){toast('⚠️ কমপক্ষে একটা আইটেম লিখুন','#f59e0b');return;}
+  names.forEach(name=>S.shopping.push({id:nextId(S.shopping),name,person,cat,note,done:false,spent:0,walletId:null,date:''}));
+  resetShopForm();saveAll();renderShopping();toast(`✅ ${names.length}টা আইটেম যোগ হয়েছে`);
+}
+function toggleShop(id){
+  const item=S.shopping.find(x=>x.id===id);
+  if(!item.done){
+    showModal(`
+      <div class="modal-title">🛒 কেনা হয়েছে — ${item.name}</div>
+      <input class="inp mb8" id="m_spent" type="number" placeholder="খরচ (৳) — না জানলে খালি রাখুন">
+      <select class="inp mb12" id="m_wallet"><option value="">ওয়ালেট (ঐচ্ছিক)</option>${walletOpts()}</select>
+      <div class="flex-row">
+        <button class="btn btn-green" style="flex:1;" onclick="confirmShopDone(${id})">✓ কেনা হয়েছে</button>
+        <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+      </div>`);
+  } else {
+    item.done=false;item.spent=0;item.walletId=null;item.date='';
+    saveAll();renderShopping();
+  }
+}
+function confirmShopDone(id){
+  const spent=+document.getElementById('m_spent').value||0;
+  const walletId=+document.getElementById('m_wallet').value;
+  const item=S.shopping.find(x=>x.id===id);
+  item.done=true;item.spent=spent;item.walletId=walletId;item.date=today();
+  if(walletId&&spent) liquidTx(walletId,-spent,`কেনাকাটা: ${item.name}`);
+  saveAll();closeModal();renderShopping();updateNet();toast('✅ কেনা হয়েছে');
+}
+function openGroupPay(){
+  const pending=S.shopping.filter(x=>!x.done);
+  if(!pending.length){toast('⚠️ কোনো বাকি আইটেম নেই','#f59e0b');return;}
+  gpSelected=new Set();
+  document.getElementById('gp_wallet').innerHTML='<option value="">ওয়ালেট বেছে নিন</option>'+walletOpts();
+  document.getElementById('gp_total').value='';
+  document.getElementById('groupPayCard').style.display='block';
+  document.getElementById('groupPayList').innerHTML=pending.map(x=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+      <input type="checkbox" id="gp_${x.id}" onchange="toggleGP(${x.id})" style="width:18px;height:18px;accent-color:var(--gold);">
+      <label for="gp_${x.id}" style="flex:1;font-size:13px;color:#e2e8f0;cursor:pointer;">${x.name}${x.person?` <span style="color:#64748b;font-size:10px;">· ${x.person}</span>`:''}</label>
+    </div>`).join('');
+  document.getElementById('groupPayCard').scrollIntoView({behavior:'smooth'});
+}
+function toggleGP(id){gpSelected.has(id)?gpSelected.delete(id):gpSelected.add(id);}
+function confirmGroupPay(){
+  if(!gpSelected.size){toast('⚠️ কোনো আইটেম বেছে নেননি','#f59e0b');return;}
+  const total=+document.getElementById('gp_total').value||0;
+  const walletId=+document.getElementById('gp_wallet').value;
+  const ids=[...gpSelected];
+  if(walletId&&total){
+    const names=ids.map(id=>S.shopping.find(x=>x.id===id)?.name).join(', ');
+    liquidTx(walletId,-total,`কেনাকাটা: ${names}`);
+  }
+  ids.forEach(id=>{const item=S.shopping.find(x=>x.id===id);if(item){item.done=true;item.spent=0;item.walletId=walletId;item.date=today();}});
+  gpSelected=new Set();
+  document.getElementById('groupPayCard').style.display='none';
+  saveAll();renderShopping();updateNet();toast(`✅ ${ids.length}টা আইটেম কেনা হয়েছে`);
+}
+function delShop(id){S.shopping=S.shopping.filter(x=>x.id!==id);saveAll();renderShopping();}
+function renderShopping(){
+  const fp=document.getElementById('fPerson')?document.getElementById('fPerson').value:'';
+  const fc=document.getElementById('fCat')?document.getElementById('fCat').value:'';
+  const items=S.shopping.filter(x=>{
+    if(shopFilter==='pending'&&x.done)return false;
+    if(shopFilter==='done'&&!x.done)return false;
+    if(fp&&x.person!==fp)return false;
+    if(fc&&x.cat!==fc)return false;
+    return true;
+  });
+  const ta=S.shopping.length,da=S.shopping.filter(x=>x.done).length,sa=S.shopping.filter(x=>x.done).reduce((a,x)=>a+x.spent,0);
+  const pct=ta?Math.round(da/ta*100):0;
+  document.getElementById('shopTotal').textContent=ta;
+  document.getElementById('shopDoneCount').textContent=da;
+  document.getElementById('shopSpent').textContent=fmt(sa);
+  document.getElementById('shopBar').style.width=pct+'%';
+  const PC={'নাফিয়া':'#f59e0b','নুসাইবা':'#3b82f6','তাফরিহা':'#ec4899','নেছারী':'#22c55e','মা':'#f0abfc','বাবা':'#93c5fd','ঘর':'#8b5cf6','অন্যান্য':'#64748b'};
+  const CI={'শিশু সামগ্রী':'🍼','মুদি/বাজার':'🛒','কাঁচাবাজার':'🥬','ইলেকট্রনিক্স':'📱','কাপড়':'👕','জুতা':'👟','ফার্নিচার':'🪑','ওষুধ':'💊','বই/স্টেশনারি':'📚','গৃহস্থালি':'🏠','ব্যক্তিগত যত্ন':'🧴','অনলাইন':'💻','অন্যান্য':'📦'};
+  const list=document.getElementById('shopList');
+  if(!items.length){list.innerHTML='<div class="empty">কোনো আইটেম নেই</div>';return;}
+  list.innerHTML=items.map(x=>{
+    const pc=PC[x.person]||'#64748b',ci=CI[x.cat]||'📦';
+    const w=S.liquid.find(l=>l.id===x.walletId);
+    return `<div class="shop-item" style="opacity:${x.done?0.55:1}">
+      <button class="shop-check ${x.done?'done':''}" onclick="toggleShop(${x.id})">✓</button>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:#e2e8f0;${x.done?'text-decoration:line-through;color:#64748b;':''}">${x.name}</div>
+        <div style="display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;">
+          ${x.person?`<span style="background:${pc}22;color:${pc};border-radius:5px;padding:1px 7px;font-size:10px;">👤 ${x.person}</span>`:''}
+          ${x.cat?`<span style="background:#1e3a5f;color:#94a3b8;border-radius:5px;padding:1px 7px;font-size:10px;">${ci} ${x.cat}</span>`:''}
+          ${x.note?`<span style="color:#475569;font-size:10px;">${x.note}</span>`:''}
+        </div>
+        ${x.done?`<div style="color:var(--green);font-size:10px;margin-top:2px;">✅ ${fmt(x.spent)} ${w?'· '+w.name:''} · ${x.date}</div>`:''}
+      </div>
+      <button class="del-btn" onclick="delShop(${x.id})">×</button>
+    </div>`;}).join('');
+}
+
+// ══════════════════════════════════════
+// LEDGER
+// ══════════════════════════════════════
+let activePerson=null;
+function renderLedger(){
+  const pawna=totalPawna(),dena=totalDena();
+  document.getElementById('ledgerPawna').textContent=fmt(pawna);
+  document.getElementById('ledgerDena').textContent=fmt(dena);
+  const list=document.getElementById('ledgerPersonList');
+  if(!S.ledger.length){list.innerHTML='<div class="empty">কোনো ব্যক্তি নেই</div>';return;}
+  list.innerHTML=S.ledger.map((p,i)=>{
+    const bal=personBal(p);
+    const color=p.color||PERSON_COLORS[i%PERSON_COLORS.length];
+    const initials=p.name.slice(0,2);
+    return `<div class="person-card" onclick="openPersonDetail(${p.id})">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="person-avatar" style="background:${color}22;color:${color};">
+          ${p.photo?`<img src="${p.photo}">`:`<span>${initials}</span>`}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#e2e8f0;">${p.name}</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">${p.transactions.length}টা লেনদেন</div>
+        </div>
+        <div>
+          <span class="balance-pill" style="background:${bal>0?'#22c55e22':bal<0?'#ef444422':'#1e3a5f'};color:${bal>0?'var(--green)':bal<0?'var(--red)':'#64748b'};">
+            ${bal>0?'পাই':''}${bal<0?'দেই':''} ${fmt(Math.abs(bal))}
+          </span>
+        </div>
+      </div>
+    </div>`;}).join('');
+}
+function openPersonDetail(pid){
+  activePerson=pid;
+  document.getElementById('ledgerListView').style.display='none';
+  document.getElementById('ledgerDetailView').style.display='block';
+  renderPersonDetail();
+}
+function closeLedgerDetail(){
+  activePerson=null;
+  document.getElementById('ledgerListView').style.display='block';
+  document.getElementById('ledgerDetailView').style.display='none';
+  renderLedger();
+}
+function renderPersonDetail(){
+  const p=S.ledger.find(x=>x.id===activePerson);
+  if(!p)return;
+  const bal=personBal(p);
+  const color=p.color||'#f59e0b';
+  const totalLent=p.transactions.filter(t=>t.type==='lent').reduce((a,t)=>a+t.amount,0);
+  const totalBorrowed=p.transactions.filter(t=>t.type==='borrowed').reduce((a,t)=>a+t.amount,0);
+  const totalReceived=p.transactions.filter(t=>t.type==='received').reduce((a,t)=>a+t.amount,0);
+  const totalRepaid=p.transactions.filter(t=>t.type==='repaid').reduce((a,t)=>a+t.amount,0);
+  const txSorted=[...p.transactions].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('ledgerDetailContent').innerHTML=`
+    <div class="card-gold mb10">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div class="person-avatar" style="background:${color}22;color:${color};width:50px;height:50px;font-size:20px;">
+          ${p.photo?`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span>${p.name.slice(0,2)}</span>`}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:16px;font-weight:800;color:#e2e8f0;">${p.name}</div>
+          <div style="margin-top:4px;">
+            <span class="balance-pill" style="background:${bal>0?'#22c55e22':bal<0?'#ef444422':'#1e3a5f'};color:${bal>0?'var(--green)':bal<0?'var(--red)':'#64748b'};">
+              ${bal>0?`আমি পাই ${fmt(bal)}`:bal<0?`আমি দেই ${fmt(Math.abs(bal))}`:'হিসাব বরাবর'}
+            </span>
+          </div>
+        </div>
+        <button onclick="uploadPersonPhoto(${p.id})" style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:#94a3b8;cursor:pointer;font-size:11px;">📷</button>
+        <input type="file" id="photoInput_${p.id}" accept="image/*" style="display:none;" onchange="savePersonPhoto(${p.id},this)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="ov-card"><div class="ov-label">ধার দিয়েছি</div><div class="ov-val" style="color:var(--gold);font-size:14px;">${fmt(totalLent)}</div></div>
+        <div class="ov-card"><div class="ov-label">ধার নিয়েছি</div><div class="ov-val" style="color:var(--red);font-size:14px;">${fmt(totalBorrowed)}</div></div>
+        <div class="ov-card"><div class="ov-label">ফেরত পেয়েছি</div><div class="ov-val" style="color:var(--green);font-size:14px;">${fmt(totalReceived)}</div></div>
+        <div class="ov-card"><div class="ov-label">ফেরত দিয়েছি</div><div class="ov-val" style="color:var(--green);font-size:14px;">${fmt(totalRepaid)}</div></div>
+      </div>
+    </div>
+    <div class="card mb10">
+      <div class="section-title">➕ নতুন লেনদেন</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+        ${Object.entries(TX_TYPES).map(([k,v])=>`
+          <button onclick="addPersonTx(${p.id},'${k}')"
+            style="padding:10px;background:${v.color}22;color:${v.color};border:1px solid ${v.color}44;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600;">
+            ${v.label}
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📋 লেনদেনের ইতিহাস</div>
+      ${txSorted.length?txSorted.map(tx=>{
+        const tt=TX_TYPES[tx.type];
+        const w=S.liquid.find(l=>l.id===tx.walletId);
+        return `<div class="tx-row">
+          <div style="display:flex;align-items:center;gap:9px;flex:1;">
+            <div class="tx-type-dot" style="background:${tt.color};"></div>
+            <div>
+              <div style="font-size:12px;color:#e2e8f0;">${tt.label}${tx.note?` — ${tx.note}`:''}</div>
+              <div style="font-size:10px;color:#475569;">${tx.date}${w?` · ${w.name}`:''}</div>
+              ${tx.receipt?`<img src="${tx.receipt}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;margin-top:4px;cursor:pointer;" onclick="viewReceipt('${tx.receipt}')">` :''}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="color:${tt.color};font-weight:700;font-size:13px;">${fmt(tx.amount)}</span>
+            <button onclick="delPersonTx(${p.id},${tx.id})" class="del-btn">×</button>
+          </div>
+        </div>`;}).join(''):'<div class="empty">কোনো লেনদেন নেই</div>'}
+    </div>
+    <div style="margin-top:10px;text-align:center;">
+      <button onclick="delPerson(${p.id})" style="background:#ef444422;color:#ef4444;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:12px;">🗑 এই ব্যক্তিকে ডিলিট করুন</button>
+    </div>`;
+}
+function addPersonTx(pid,type){
+  const tt=TX_TYPES[type];
+  showModal(`
+    <div class="modal-title" style="color:${tt.color}">${tt.label}</div>
+    <input class="inp mb8" id="m_amt" type="number" placeholder="পরিমাণ (৳)">
+    <select class="inp mb8" id="m_wallet"><option value="">ওয়ালেট (ঐচ্ছিক)</option>${walletOpts()}</select>
+    <input class="inp mb8" id="m_date" type="date" value="${today()}">
+    <input class="inp mb8" id="m_note" placeholder="নোট...">
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;color:#64748b;margin-bottom:6px;">রসিদ / ছবি (ঐচ্ছিক):</div>
+      <input type="file" id="m_receipt" accept="image/*" style="color:#94a3b8;font-size:12px;width:100%;">
+    </div>
+    <div class="flex-row">
+      <button class="btn" style="flex:1;background:${tt.color};color:#fff;" onclick="doAddPersonTx(${pid},'${type}')">যোগ করুন</button>
+      <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+    </div>`);
+}
+function doAddPersonTx(pid,type){
+  const amt=+document.getElementById('m_amt').value;
+  if(!amt)return;
+  const walletId=+document.getElementById('m_wallet').value;
+  const date=document.getElementById('m_date').value||today();
+  const note=document.getElementById('m_note').value;
+  const receiptFile=document.getElementById('m_receipt').files[0];
+  function finish(receipt){
+    const p=S.ledger.find(x=>x.id===pid);
+    p.transactions.push({id:nextId(p.transactions),type,amount:amt,note,date,walletId:walletId||null,receipt:receipt||''});
+    if(walletId){
+      if(type==='lent')     liquidTx(walletId,-amt,`ধার দিলাম: ${p.name}`);
+      if(type==='borrowed') liquidTx(walletId,+amt,`ধার নিলাম: ${p.name}`);
+      if(type==='received') liquidTx(walletId,+amt,`পেলাম: ${p.name}`);
+      if(type==='repaid')   liquidTx(walletId,-amt,`দিয়ে দিলাম: ${p.name}`);
+    }
+    saveAll();closeModal();renderPersonDetail();updateNet();toast('✅ যোগ হয়েছে');
+  }
+  if(receiptFile){const reader=new FileReader();reader.onload=e=>finish(e.target.result);reader.readAsDataURL(receiptFile);}
+  else finish('');
+}
+function delPersonTx(pid,txId){
+  if(!confirm('ডিলিট করবেন?'))return;
+  const p=S.ledger.find(x=>x.id===pid);
+  p.transactions=p.transactions.filter(t=>t.id!==txId);
+  saveAll();renderPersonDetail();updateNet();
+}
+function delPerson(pid){
+  if(!confirm('এই ব্যক্তি ও তার সব লেনদেন ডিলিট করবেন?'))return;
+  S.ledger=S.ledger.filter(x=>x.id!==pid);
+  saveAll();closeLedgerDetail();toast('✅ ডিলিট হয়েছে');
+}
+function uploadPersonPhoto(pid){document.getElementById('photoInput_'+pid).click();}
+function savePersonPhoto(pid,input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{S.ledger.find(x=>x.id===pid).photo=e.target.result;saveAll();renderPersonDetail();toast('✅ ছবি সেভ হয়েছে');};
+  reader.readAsDataURL(file);
+}
+function viewReceipt(src){
+  showModal(`<div class="modal-title">📄 রসিদ</div><img src="${src}" style="width:100%;border-radius:10px;"><div style="margin-top:10px;text-align:center;"><button class="btn-sm" onclick="closeModal()">বন্ধ করুন</button></div>`);
+}
+
+// ══════════════════════════════════════
+// INVEST
+// ══════════════════════════════════════
+let activeInvest=null;
+function renderInvestList(){
+  document.getElementById('investTotal').textContent=fmt(totalInvest());
+  document.getElementById('investTotalReturn').textContent=fmt(totalInvestReturn());
+  const list=document.getElementById('investOrgList');
+  if(!S.invest.length){list.innerHTML='<div class="empty">কোনো বিনিয়োগ নেই</div>';return;}
+  list.innerHTML=S.invest.map(inv=>{
+    const tin=investIn(inv),tout=investOut(inv),net=tin-tout;
+    const pct=tin?Math.min(100,Math.round(tout/tin*100)):0;
+    return `<div class="invest-card" onclick="openInvestDetail(${inv.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#e2e8f0;">${inv.name}</div>
+          ${inv.note?`<div style="font-size:11px;color:#475569;margin-top:2px;">${inv.note}</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:14px;font-weight:800;color:var(--gold);">${fmt(net)}</div>
+          <div style="font-size:10px;color:var(--green);">রিটার্ন: ${fmt(tout)}</div>
+        </div>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px;">
+        <span style="font-size:10px;color:#475569;">বিনিয়োগ: ${fmt(tin)}</span>
+        <span style="font-size:10px;color:var(--green);">${pct}% ফেরত</span>
+      </div>
+    </div>`;}).join('');
+}
+function openInvestDetail(iid){
+  activeInvest=iid;
+  document.getElementById('investListView').style.display='none';
+  document.getElementById('investDetailView').style.display='block';
+  renderInvestDetail();
+}
+function closeInvestDetail(){
+  activeInvest=null;
+  document.getElementById('investListView').style.display='block';
+  document.getElementById('investDetailView').style.display='none';
+  renderInvestList();
+}
+function renderInvestDetail(){
+  const inv=S.invest.find(x=>x.id===activeInvest);
+  if(!inv)return;
+  const tin=investIn(inv),tout=investOut(inv),net=tin-tout;
+  const hasReturn=tout>0;
+  const profit=tout-tin;
+  const roi=tin>0?((tout-tin)/tin*100).toFixed(1):0;
+  const txSorted=[...inv.transactions].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('investDetailContent').innerHTML=`
+    <div class="card-gold mb10">
+      <div style="font-size:16px;font-weight:800;color:#e2e8f0;margin-bottom:12px;">${inv.name}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div class="ov-card"><div class="ov-label">মোট বিনিয়োগ</div><div class="ov-val" style="color:var(--gold);font-size:14px;">${fmt(tin)}</div></div>
+        <div class="ov-card"><div class="ov-label">বর্তমান মূল্য</div><div class="ov-val" style="color:var(--blue);font-size:14px;">${fmt(net)}</div></div>
+        <div class="ov-card"><div class="ov-label">মোট রিটার্ন</div><div class="ov-val" style="color:var(--green);font-size:14px;">${fmt(tout)}</div></div>
+        <div class="ov-card">
+          <div class="ov-label">লাভ/ক্ষতি ${hasReturn?`(ROI: ${roi}%)`:'(রিটার্ন নেই)'}</div>
+          <div class="ov-val" style="color:${!hasReturn?'#64748b':profit>=0?'var(--green)':'var(--red)'};font-size:14px;">
+            ${!hasReturn?'—':fmtS(profit)}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card mb10">
+      <div class="section-title">➕ নতুন লেনদেন</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${Object.entries(INV_TYPES).map(([k,v])=>`
+          <button onclick="addInvestTx(${inv.id},'${k}')"
+            style="flex:1;padding:10px;background:${v.color}22;color:${v.color};border:1px solid ${v.color}44;border-radius:9px;cursor:pointer;font-size:12px;font-weight:600;">
+            ${v.label}
+          </button>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📋 লেনদেনের ইতিহাস</div>
+      ${txSorted.length?txSorted.map(tx=>{
+        const it=INV_TYPES[tx.type];
+        const w=S.liquid.find(l=>l.id===tx.walletId);
+        return `<div class="tx-row">
+          <div style="display:flex;align-items:center;gap:9px;flex:1;">
+            <div class="tx-type-dot" style="background:${it.color};"></div>
+            <div>
+              <div style="font-size:12px;color:#e2e8f0;">${it.label}${tx.note?` — ${tx.note}`:''}</div>
+              <div style="font-size:10px;color:#475569;">${tx.date}${w?` · ${w.name}`:''}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="color:${it.color};font-weight:700;font-size:13px;">${fmt(tx.amount)}</span>
+            <button onclick="delInvestTx(${inv.id},${tx.id})" class="del-btn">×</button>
+          </div>
+        </div>`;}).join(''):'<div class="empty">কোনো লেনদেন নেই</div>'}
+    </div>
+    <div style="margin-top:10px;text-align:center;">
+      <button onclick="delInvestOrg(${inv.id})" style="background:#ef444422;color:#ef4444;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:12px;">🗑 ডিলিট করুন</button>
+    </div>`;
+}
+function addInvestTx(iid,type){
+  const it=INV_TYPES[type];
+  showModal(`
+    <div class="modal-title" style="color:${it.color}">${it.label}</div>
+    <input class="inp mb8" id="m_amt" type="number" placeholder="পরিমাণ (৳)">
+    <select class="inp mb8" id="m_wallet"><option value="">ওয়ালেট (ঐচ্ছিক)</option>${walletOpts()}</select>
+    <input class="inp mb8" id="m_date" type="date" value="${today()}">
+    <input class="inp mb8" id="m_note" placeholder="নোট...">
+    <div class="flex-row">
+      <button class="btn" style="flex:1;background:${it.color};color:#0d1b2a;" onclick="doAddInvestTx(${iid},'${type}')">যোগ করুন</button>
+      <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+    </div>`);
+}
+function doAddInvestTx(iid,type){
+  const amt=+document.getElementById('m_amt').value;
+  if(!amt)return;
+  const walletId=+document.getElementById('m_wallet').value;
+  const date=document.getElementById('m_date').value||today();
+  const note=document.getElementById('m_note').value;
+  const inv=S.invest.find(x=>x.id===iid);
+  inv.transactions.push({id:nextId(inv.transactions),type,amount:amt,note,date,walletId:walletId||null});
+  if(walletId){
+    if(type==='invested') liquidTx(walletId,-amt,`বিনিয়োগ: ${inv.name}`);
+    if(type==='returned'||type==='profit') liquidTx(walletId,+amt,`${INV_TYPES[type].label}: ${inv.name}`);
+  }
+  saveAll();closeModal();renderInvestDetail();updateNet();toast('✅ যোগ হয়েছে');
+}
+function delInvestTx(iid,txId){
+  if(!confirm('ডিলিট করবেন?'))return;
+  const inv=S.invest.find(x=>x.id===iid);
+  inv.transactions=inv.transactions.filter(t=>t.id!==txId);
+  saveAll();renderInvestDetail();updateNet();
+}
+function delInvestOrg(iid){
+  if(!confirm('এই বিনিয়োগ ও সব ইতিহাস ডিলিট করবেন?'))return;
+  S.invest=S.invest.filter(x=>x.id!==iid);
+  saveAll();closeInvestDetail();toast('✅ ডিলিট হয়েছে');
+}
+
+// ══════════════════════════════════════
+// SADAQA
+// ══════════════════════════════════════
+function populateSadaqaWallets(){document.getElementById('sadaqa_wallet').innerHTML='<option value="">ওয়ালেট থেকে (ঐচ্ছিক)</option>'+walletOpts();}
+function addSadaqa(){
+  const amt=+document.getElementById('sadaqa_amt').value;
+  const walletId=+document.getElementById('sadaqa_wallet').value;
+  const note=document.getElementById('sadaqa_note').value;
+  const type=document.getElementById('sadaqa_type').value;
+  if(!amt)return;
+  if(walletId) liquidTx(walletId,-amt,`সদকা: ${note||type}`);
+  S.sadaqa.unshift({id:nextId(S.sadaqa),amount:amt,walletId,note,type,date:today()});
+  document.getElementById('sadaqa_amt').value='';
+  document.getElementById('sadaqa_note').value='';
+  saveAll();renderSadaqa();updateNet();toast('✅ সদকা লগ হয়েছে');
+}
+function delSadaqa(id){S.sadaqa=S.sadaqa.filter(x=>x.id!==id);saveAll();renderSadaqa();}
+function renderSadaqa(){
+  populateSadaqaWallets();
+  const total=S.sadaqa.reduce((a,x)=>a+x.amount,0);
+  const mth=today().slice(0,7);
+  const month=S.sadaqa.filter(x=>x.date.startsWith(mth)).reduce((a,x)=>a+x.amount,0);
+  document.getElementById('sadaqaTotal').textContent=fmt(total);
+  document.getElementById('sadaqaMonth').textContent=fmt(month);
+  const list=document.getElementById('sadaqaList');
+  if(!S.sadaqa.length){list.innerHTML='<div class="empty">কোনো সদকা নেই</div>';return;}
+  list.innerHTML=S.sadaqa.slice(0,30).map(x=>{
+    const w=S.liquid.find(l=>l.id===x.walletId);
+    return `<div class="hist-row">
+      <div>
+        <div style="color:#e2e8f0;font-size:12px;">${x.note||'সদকা'} <span class="badge" style="background:#22c55e22;color:var(--green);">${x.type}</span></div>
+        <div style="color:#475569;font-size:10px;">${x.date}${w?' · '+w.name:''}</div>
+      </div>
+      <div class="row-actions">
+        <span style="color:var(--green);font-weight:700;font-size:12px;">${fmt(x.amount)}</span>
+        <button class="del-btn" onclick="delSadaqa(${x.id})">×</button>
+      </div>
+    </div>`;}).join('');
+}
+
+// ══════════════════════════════════════
+// REPORT
+// ══════════════════════════════════════
+let repYear=new Date().getFullYear(),repMonth=new Date().getMonth();
+function changeRepMonth(d){
+  repMonth+=d;
+  if(repMonth>11){repMonth=0;repYear++;}
+  if(repMonth<0){repMonth=11;repYear--;}
+  renderReport();
+}
+function renderReport(){
+  const mth=`${repYear}-${String(repMonth+1).padStart(2,'0')}`;
+  document.getElementById('reportTitle').textContent=`${BN_MONTHS[repMonth]} ${repYear}`;
+  const mInc=S.ie.filter(x=>x.type==='income'&&x.date.startsWith(mth)).reduce((a,x)=>a+x.amount,0);
+  const mExp=S.ie.filter(x=>x.type==='expense'&&x.date.startsWith(mth)).reduce((a,x)=>a+x.amount,0);
+  const mSad=S.sadaqa.filter(x=>x.date.startsWith(mth)).reduce((a,x)=>a+x.amount,0);
+  const mShop=S.shopping.filter(x=>x.done&&x.date.startsWith(mth)).reduce((a,x)=>a+x.spent,0);
+  const mTotalExp=mExp+mSad+mShop;
+  const mNet=mInc-mTotalExp;
+  const incByCat={};
+  S.ie.filter(x=>x.type==='income'&&x.date.startsWith(mth)).forEach(x=>{incByCat[x.cat]=(incByCat[x.cat]||0)+x.amount;});
+  const expByCat={};
+  S.ie.filter(x=>x.type==='expense'&&x.date.startsWith(mth)).forEach(x=>{expByCat[x.cat]=(expByCat[x.cat]||0)+x.amount;});
+  if(mShop>0) expByCat['কেনাকাটা']=(expByCat['কেনাকাটা']||0)+mShop;
+  if(mSad>0)  expByCat['সদকা/দান']=(expByCat['সদকা/দান']||0)+mSad;
+  document.getElementById('reportContent').innerHTML=`
+    <div class="card-gold mb10">
+      <div class="section-title">📊 মাসিক সারসংক্ষেপ</div>
+      <div class="row"><span class="row-name">মোট আয়</span><span style="color:var(--green);font-weight:700;">${fmt(mInc)}</span></div>
+      <div class="row"><span class="row-name">মোট ব্যয়</span><span style="color:var(--red);font-weight:700;">${fmt(mTotalExp)}</span></div>
+      ${mShop>0?`<div class="row" style="padding-left:12px;"><span class="row-name" style="color:#64748b;font-size:11px;">— কেনাকাটা</span><span style="color:#64748b;font-size:11px;">${fmt(mShop)}</span></div>`:''}
+      ${mSad>0?`<div class="row" style="padding-left:12px;"><span class="row-name" style="color:#64748b;font-size:11px;">— সদকা/দান</span><span style="color:#64748b;font-size:11px;">${fmt(mSad)}</span></div>`:''}
+      <div class="row" style="border-top:1px solid #c9a84c44;padding-top:10px;margin-top:4px;">
+        <span style="color:var(--gold);font-weight:700;">নিট সাশ্রয়</span>
+        <span style="color:${mNet>=0?'var(--green)':'var(--red)'};font-weight:800;font-size:15px;">${fmt(mNet)}</span>
+      </div>
+    </div>
+    <div class="card mb10">
+      <div class="section-title">💰 আয়ের খাত</div>
+      ${Object.entries(incByCat).map(([k,v])=>`<div class="row"><span class="row-name">${k}</span><span style="color:var(--green);font-weight:700;">${fmt(v)}</span></div>`).join('')||'<div class="empty">কোনো আয় নেই</div>'}
+    </div>
+    <div class="card mb10">
+      <div class="section-title">💸 ব্যয়ের খাত</div>
+      ${Object.entries(expByCat).map(([k,v])=>`<div class="row"><span class="row-name">${k}</span><span style="color:var(--red);font-weight:700;">${fmt(v)}</span></div>`).join('')||'<div class="empty">কোনো ব্যয় নেই</div>'}
+    </div>
+    <div class="card">
+      <div class="section-title">💵 ওয়ালেট অবস্থান</div>
+      ${S.liquid.map(x=>`<div class="row"><span class="row-name">${x.name}</span><span style="color:var(--gold);font-weight:700;">${fmt(x.amount)}</span></div>`).join('')}
+    </div>`;
+}
+
+// ══════════════════════════════════════
+// BACKUP
+// ══════════════════════════════════════
+function renderBackup(){
+  updateLastSyncUI();
+  document.getElementById('backupStats').innerHTML=`
+    <div class="row"><span class="row-name">ওয়ালেট</span><span style="color:var(--gold);">${S.liquid.length}টা</span></div>
+    <div class="row"><span class="row-name">লেনদেন ব্যক্তি</span><span style="color:var(--gold);">${S.ledger.length}জন</span></div>
+    <div class="row"><span class="row-name">বিনিয়োগ</span><span style="color:var(--gold);">${S.invest.length}টা</span></div>
+    <div class="row"><span class="row-name">আয়/ব্যয় এন্ট্রি</span><span style="color:var(--gold);">${S.ie.length}টা</span></div>
+    <div class="row"><span class="row-name">কেনাকাটা আইটেম</span><span style="color:var(--gold);">${S.shopping.length}টা</span></div>
+    <div class="row"><span class="row-name">সদকা এন্ট্রি</span><span style="color:var(--gold);">${S.sadaqa.length}টা</span></div>
+    <div class="row"><span class="row-name">Sync অবস্থা</span><span id="backupSyncStatus" style="color:var(--green);">${lastSyncAt?'✅ Synced':'⏳ pending'}</span></div>`;
+}
+function exportData(){
+  const data={version:2,exportDate:today(),liquid:S.liquid,liquidTx:S.liquidTx,ledger:S.ledger,invest:S.invest,ie:S.ie,shopping:S.shopping,sadaqa:S.sadaqa};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`arthik-backup-${today()}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('✅ Export সম্পন্ন!');
+}
+function emailBackup(){
+  const email=document.getElementById('backupEmail').value.trim();
+  if(!email){toast('⚠️ Email দিন','#f59e0b');return;}
+  const data={version:2,exportDate:today(),liquid:S.liquid,liquidTx:S.liquidTx,ledger:S.ledger,invest:S.invest,ie:S.ie,shopping:S.shopping,sadaqa:S.sadaqa};
+  const json=JSON.stringify(data);
+  const subject=encodeURIComponent(`আর্থিক ট্র্যাকার Backup — ${today()}`);
+  const body=encodeURIComponent(`Backup data:\n\n${json}`);
+  window.open(`mailto:${email}?subject=${subject}&body=${body}`);
+  toast('✅ Email app খুলছে...');
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  if(!confirm('⚠️ সব বর্তমান data মুছে যাবে। নিশ্চিত?'))return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.liquid)   S.liquid=data.liquid;
+      if(data.liquidTx) S.liquidTx=data.liquidTx;
+      if(data.ledger)   S.ledger=data.ledger;
+      if(data.invest)   S.invest=data.invest;
+      if(data.ie)       S.ie=data.ie;
+      if(data.shopping) S.shopping=data.shopping;
+      if(data.sadaqa)   S.sadaqa=data.sadaqa;
+      await manualSync();
+      updateNet();renderBackup();toast('✅ Restore ও Sync সম্পন্ন!');
+    }catch{toast('⚠️ ফাইলটা সঠিক নয়!','#ef4444');}
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// ══════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════
+function showModal(html){document.getElementById('modal').classList.remove('hidden');document.getElementById('modalBox').innerHTML=html;}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+
+function openModal(type){
+  if(type==='addLiquid'){
+    showModal(`
+      <div class="modal-title">💵 নতুন ওয়ালেট</div>
+      <input class="inp mb8" id="m_name" placeholder="ওয়ালেটের নাম...">
+      <input class="inp mb12" id="m_amt" type="number" placeholder="প্রারম্ভিক পরিমাণ (৳)">
+      <div class="flex-row">
+        <button class="btn btn-gold" style="flex:1;" onclick="doAddLiquid()">যোগ করুন</button>
+        <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+      </div>`);
+  } else if(type==='addPerson'){
+    showModal(`
+      <div class="modal-title">🤝 নতুন ব্যক্তি</div>
+      <input class="inp mb12" id="m_name" placeholder="ব্যক্তির নাম...">
+      <div class="flex-row">
+        <button class="btn btn-gold" style="flex:1;" onclick="doAddPerson()">যোগ করুন</button>
+        <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+      </div>`);
+  } else if(type==='addInvestOrg'){
+    showModal(`
+      <div class="modal-title">📈 নতুন বিনিয়োগ</div>
+      <input class="inp mb8" id="m_name" placeholder="প্রতিষ্ঠানের নাম...">
+      <input class="inp mb8" id="m_amt" type="number" placeholder="প্রারম্ভিক বিনিয়োগ (৳)">
+      <select class="inp mb8" id="m_wallet"><option value="">ওয়ালেট থেকে কাটবেন? (ঐচ্ছিক)</option>${walletOpts()}</select>
+      <input class="inp mb12" id="m_note" placeholder="নোট...">
+      <div class="flex-row">
+        <button class="btn btn-gold" style="flex:1;" onclick="doAddInvestOrg()">যোগ করুন</button>
+        <button class="btn-sm" onclick="closeModal()">বাতিল</button>
+      </div>`);
+  }
+}
+function doAddLiquid(){
+  const name=document.getElementById('m_name').value.trim();
+  const amt=+document.getElementById('m_amt').value||0;
+  if(!name)return;
+  S.liquid.push({id:nextId(S.liquid),name,amount:amt});
+  saveAll();closeModal();renderLiquid();updateNet();toast('✅ ওয়ালেট যোগ হয়েছে');
+}
+function doAddPerson(){
+  const name=document.getElementById('m_name').value.trim();
+  if(!name)return;
+  const color=PERSON_COLORS[S.ledger.length%PERSON_COLORS.length];
+  S.ledger.push({id:nextId(S.ledger),name,photo:'',color,transactions:[]});
+  saveAll();closeModal();renderLedger();toast('✅ ব্যক্তি যোগ হয়েছে');
+}
+function doAddInvestOrg(){
+  const name=document.getElementById('m_name').value.trim();
+  const amt=+document.getElementById('m_amt').value||0;
+  const walletId=+document.getElementById('m_wallet').value;
+  const note=document.getElementById('m_note').value;
+  if(!name)return;
+  const inv={id:nextId(S.invest),name,note,transactions:[]};
+  if(amt){
+    inv.transactions.push({id:1,type:'invested',amount:amt,note:'প্রারম্ভিক',date:today(),walletId:walletId||null});
+    if(walletId) liquidTx(walletId,-amt,`বিনিয়োগ: ${name}`);
+  }
+  S.invest.push(inv);
+  saveAll();closeModal();renderInvestList();updateNet();toast('✅ বিনিয়োগ যোগ হয়েছে');
+}
+
+// ══════════════════════════════════════
+// START
+// ══════════════════════════════════════
+initApp();
+</script>
+</body>
+</html>
