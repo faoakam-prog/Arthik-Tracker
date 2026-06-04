@@ -372,7 +372,7 @@ const SUPA_HEADERS = {
 };
 
 async function supaLoad() {
-  const res = await fetch(`${SUPA_URL}/rest/v1/arthik_data?id=eq.main&select=*`, {
+  const res = await fetch(`${SUPA_URL}/rest/v1/arthik_data?id=eq.ak-8024000338a9fa9756da77fc&select=*`, {
     headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
   });
   if (!res.ok) throw new Error('Load failed: ' + res.status);
@@ -382,7 +382,7 @@ async function supaLoad() {
 
 async function supaSave(data) {
   const payload = {
-    id: 'main',
+    id: 'ak-8024000338a9fa9756da77fc',
     liquid: data.liquid,
     liquid_tx: data.liquidTx,
     ledger: data.ledger,
