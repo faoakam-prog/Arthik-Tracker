@@ -106,6 +106,22 @@
   <div style="color:#475569;font-size:11px;" id="loadingMsg">Supabase থেকে sync হচ্ছে</div>
 </div>
 
+<!-- Login -->
+<div id="loginOverlay" style="position:fixed;inset:0;background:linear-gradient(135deg,#0d1b2a,#0f2240);z-index:1000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:340px;text-align:center;">
+    <div style="width:72px;height:72px;margin:0 auto 18px;border-radius:50%;border:2px solid #c9a84c66;display:flex;align-items:center;justify-content:center;font-size:34px;color:#c9a84c;">৳</div>
+    <div style="font-size:20px;font-weight:800;background:linear-gradient(90deg,#c9a84c,#f0d080);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">আর্থিক ট্র্যাকার</div>
+    <div style="font-size:11px;color:#8aab8a;margin-bottom:26px;">আবুল কালাম নেছারী</div>
+    <input id="loginEmail" type="email" autocomplete="username" placeholder="ইমেইল"
+      style="background:#1e3a5f;border:1px solid #2a4a6f;border-radius:9px;padding:12px 14px;color:#f1f5f9;font-size:14px;width:100%;outline:none;margin-bottom:10px;">
+    <input id="loginPass" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড"
+      style="background:#1e3a5f;border:1px solid #2a4a6f;border-radius:9px;padding:12px 14px;color:#f1f5f9;font-size:14px;width:100%;outline:none;margin-bottom:14px;">
+    <button id="loginBtn" onclick="doLogin()"
+      style="background:#c9a84c;color:#0d1b2a;border:none;border-radius:9px;padding:13px;font-weight:700;font-size:14px;width:100%;cursor:pointer;">প্রবেশ করুন</button>
+    <div id="loginErr" style="color:#ef4444;font-size:12px;margin-top:12px;min-height:16px;"></div>
+  </div>
+</div>
+
 <div class="header">
   <div class="header-top">
     <div>
@@ -364,16 +380,60 @@
 // ══════════════════════════════════════
 const SUPA_URL = 'https://sprcckidujdtqojfjsvv.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwcmNja2lkdWpkdHFvamZqc3Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1Mjg5OTYsImV4cCI6MjA5NjEwNDk5Nn0.j14OuHF3vEELwGKL5Hilelc10uSod0VcM90M9olMS-w';
-const SUPA_HEADERS = {
-  'Content-Type': 'application/json',
-  'apikey': SUPA_KEY,
-  'Authorization': 'Bearer ' + SUPA_KEY,
-  'Prefer': 'return=minimal'
-};
+// লগইন-করা ইউজারের token এখানে থাকবে
+let ACCESS_TOKEN = null;
+let USER_ID = null;
+const ROW_ID = 'ak-8024000338a9fa9756da77fc';
+
+// প্রতিটা request-এ apikey লাগে, কিন্তু Authorization-এ ইউজারের token যাবে (anon key নয়)
+function authHeaders(extra = {}) {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + (ACCESS_TOKEN || SUPA_KEY),
+    ...extra
+  };
+}
+
+// ইমেইল+পাসওয়ার্ড দিয়ে লগইন
+async function supaLogin(email, password) {
+  const res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPA_KEY },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error_description || data.msg || 'লগইন ব্যর্থ');
+  ACCESS_TOKEN = data.access_token;
+  USER_ID = data.user && data.user.id;
+  // token মনে রাখা (রিফ্রেশে আবার লগইন লাগবে না)
+  try { localStorage.setItem('f3_token', ACCESS_TOKEN); localStorage.setItem('f3_uid', USER_ID); } catch(e){}
+  return true;
+}
+
+// আগের সেশন থেকে token ফিরিয়ে আনা + যাচাই
+async function supaRestoreSession() {
+  let t, u;
+  try { t = localStorage.getItem('f3_token'); u = localStorage.getItem('f3_uid'); } catch(e){}
+  if (!t) return false;
+  // token এখনো বৈধ কিনা একটা হালকা request দিয়ে দেখি
+  const res = await fetch(`${SUPA_URL}/auth/v1/user`, {
+    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + t }
+  });
+  if (!res.ok) { try { localStorage.removeItem('f3_token'); } catch(e){} return false; }
+  ACCESS_TOKEN = t; USER_ID = u;
+  return true;
+}
+
+function supaLogout() {
+  try { localStorage.removeItem('f3_token'); localStorage.removeItem('f3_uid'); } catch(e){}
+  ACCESS_TOKEN = null; USER_ID = null;
+  location.reload();
+}
 
 async function supaLoad() {
-  const res = await fetch(`${SUPA_URL}/rest/v1/arthik_data?id=eq.ak-8024000338a9fa9756da77fc&select=*`, {
-    headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY }
+  const res = await fetch(`${SUPA_URL}/rest/v1/arthik_data?id=eq.${ROW_ID}&select=*`, {
+    headers: authHeaders()
   });
   if (!res.ok) throw new Error('Load failed: ' + res.status);
   const rows = await res.json();
@@ -382,7 +442,8 @@ async function supaLoad() {
 
 async function supaSave(data) {
   const payload = {
-    id: 'ak-8024000338a9fa9756da77fc',
+    id: ROW_ID,
+    owner_id: USER_ID,
     liquid: data.liquid,
     liquid_tx: data.liquidTx,
     ledger: data.ledger,
@@ -394,7 +455,7 @@ async function supaSave(data) {
   };
   const res = await fetch(`${SUPA_URL}/rest/v1/arthik_data`, {
     method: 'POST',
-    headers: { ...SUPA_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    headers: authHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
     body: JSON.stringify(payload)
   });
   if (!res.ok) {
@@ -1468,9 +1529,44 @@ function doAddInvestOrg(){
 }
 
 // ══════════════════════════════════════
-// START
+// LOGIN FLOW
 // ══════════════════════════════════════
-initApp();
+async function doLogin() {
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('loginErr');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if (!email || !pass) { errEl.textContent = 'ইমেইল ও পাসওয়ার্ড দিন'; return; }
+  btn.disabled = true; btn.textContent = 'প্রবেশ করা হচ্ছে...'; errEl.textContent = '';
+  try {
+    await supaLogin(email, pass);
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    await initApp();
+  } catch (e) {
+    errEl.textContent = '❌ ' + e.message;
+    btn.disabled = false; btn.textContent = 'প্রবেশ করুন';
+  }
+}
+
+// Enter চাপলেও লগইন
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('loginOverlay').style.display !== 'none') doLogin();
+});
+
+// ══════════════════════════════════════
+// START — আগে সেশন চেক, না থাকলে লগইন স্ক্রিন
+// ══════════════════════════════════════
+(async function start() {
+  const ok = await supaRestoreSession();
+  if (ok) {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    await initApp();
+  } else {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('loginOverlay').style.display = 'flex';
+  }
+})();
 </script>
 </body>
 </html>
